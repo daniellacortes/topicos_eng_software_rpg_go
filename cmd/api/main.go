@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"math/rand"
+
+	"github.com/google/uuid"
+
 )
 
 type PlayerRequest struct {
@@ -42,7 +45,7 @@ type BattleResponse struct {
 }
 
 type Response struct {
-	message string
+	Message string
 }
 
 func AddPlayer(w http.ResponseWriter, r *http.Request) {
@@ -212,6 +215,7 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var battleRequest BattleRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&battleRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{Message: "Internal Server Error"})
@@ -228,25 +232,10 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	indexEnemy := -1
-
-	for i, enemy := range enemies {
-		if enemy.Nickname == enemyRequest.Nickname {
-			indexEnemy = i
-			break
-		}
-	}
-
-	if indexEnemy<0 {
-		w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Response{Message: "Enemy not exits"})
-			return
-	}
-
 	indexPlayer := -1
 
 	for i, player := range players {
-		if player.Nickname == playerRequest.Nickname {
+		if player.Nickname == battleRequest.Player {
 			indexPlayer = i
 			break
 		}
@@ -258,7 +247,25 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 			return
 	}
 
+	indexEnemy := -1
+
+	for i, enemy := range enemies {
+		if enemy.Nickname == battleRequest.Enemy {
+			indexEnemy = i
+			break
+		}
+	}
+
+	if indexEnemy<0 {
+		w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(Response{Message: "Enemy not exits"})
+			return
+	}
+
+	
+
 	diceThrow := rand.Intn(6-1)+1
+	battleID := uuid.New().String()
 
 	if diceThrow >= 1 && diceThrow <=3 {
 		players[indexPlayer].Life -= enemies[indexEnemy].Attack
@@ -268,6 +275,15 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		enemies[indexEnemy].Life -= players[indexPlayer].Attack
 	}
 
+	battle := BattleRequest{
+		Id: battleID,
+		Enemy: battleRequest.Enemy,
+		Player: battleRequest.Player,
+		DiceThrow: diceThrow,
+		}
+	battles = append(battles, battle)
+	
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(BattleResponse{
 		Id: "uuid",
@@ -275,21 +291,17 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		Player: players[indexPlayer],
 		Enemy: enemies[indexEnemy],
 	})
-}
 
-	enemy := EnemyRequest{
-		Nickname: enemyRequest.Nickname,
-		Life:     rand.Intn(10-1)+1,
-		Attack:   rand.Intn(10-1)+1}
-	enemies = append(enemies, enemy)
+
+	
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(enemy)
+	json.NewEncoder(w).Encode(battle)
 }
 
 var players []PlayerRequest
-
 var enemies []EnemyRequest
+var battles []BattleRequest
 
 func main() {
 	mux := http.NewServeMux()
@@ -302,7 +314,7 @@ func main() {
 
 	mux.HandleFunc("POST /enemy", AddEnemy)
 
-	mux.HandleFunc("POST /enemy", AddBattle)
+	mux.HandleFunc("POST /battle", AddBattle)
 
 	fmt.Println("Server is running on port 8080")
 	err := http.ListenAndServe(":8080", mux)
