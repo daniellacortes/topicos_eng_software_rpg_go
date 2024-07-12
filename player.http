@@ -1,0 +1,15 @@
+POST http://localhost:8080/player HTTP/1.1
+content-type: application/json
+
+{
+    "nickname": "Thor",
+    "life": 10,
+    "attack": 6
+}
+
+###
+GET http://localhost:8080/player HTTP/1.1
+content-type: application/json
+
+{
+}
