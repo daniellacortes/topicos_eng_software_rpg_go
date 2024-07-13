@@ -3,11 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"math/rand"
+	"net/http"
 
 	"github.com/google/uuid"
-
 )
 
 type PlayerRequest struct {
@@ -23,10 +22,10 @@ type EnemyRequest struct {
 }
 
 type BattleRequest struct {
-	Id string
-	Enemy string
-	Player string
-	DiceThrow     int
+	Id        string
+	Enemy     string
+	Player    string
+	DiceThrow int
 }
 
 type PlayerResponse struct {
@@ -38,10 +37,10 @@ type EnemyResponse struct {
 }
 
 type BattleResponse struct {
-	Id string
+	Id        string
 	DiceThrow int
-	Player PlayerRequest
-	Enemy EnemyRequest
+	Player    PlayerRequest
+	Enemy     EnemyRequest
 }
 
 type Response struct {
@@ -207,8 +206,8 @@ func AddEnemy(w http.ResponseWriter, r *http.Request) {
 
 	enemy := EnemyRequest{
 		Nickname: enemyRequest.Nickname,
-		Life:     rand.Intn(10-1)+1,
-		Attack:   rand.Intn(10-1)+1}
+		Life:     rand.Intn(10-1) + 1,
+		Attack:   rand.Intn(10-1) + 1}
 	enemies = append(enemies, enemy)
 
 	w.WriteHeader(http.StatusOK)
@@ -330,10 +329,10 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if indexPlayer<0 {
+	if indexPlayer < 0 {
 		w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Response{Message: "Player not exits"})
-			return
+		json.NewEncoder(w).Encode(Response{Message: "Player not exits"})
+		return
 	}
 
 	indexEnemy := -1
@@ -345,18 +344,28 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if indexEnemy<0 {
+	if indexEnemy < 0 {
 		w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Response{Message: "Enemy not exits"})
-			return
+		json.NewEncoder(w).Encode(Response{Message: "Enemy not exits"})
+		return
 	}
 
-	
-
-	diceThrow := rand.Intn(6-1)+1
+	diceThrow := rand.Intn(6-1) + 1
 	battleID := uuid.New().String()
 
-	if diceThrow >= 1 && diceThrow <=3 {
+	if players[indexPlayer].Life <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{Message: "Player is dead"})
+		return
+	}
+
+	if enemies[indexEnemy].Life <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{Message: "Enemy is dead"})
+		return
+	}
+
+	if diceThrow >= 1 && diceThrow <= 3 {
 		players[indexPlayer].Life -= enemies[indexEnemy].Attack
 	}
 
@@ -364,21 +373,21 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 		enemies[indexEnemy].Life -= players[indexPlayer].Attack
 	}
 
+
 	battle := BattleRequest{
-		Id: battleID,
-		Enemy: battleRequest.Enemy,
-		Player: battleRequest.Player,
+		Id:        battleID,
+		Enemy:     battleRequest.Enemy,
+		Player:    battleRequest.Player,
 		DiceThrow: diceThrow,
-		}
+	}
 	battles = append(battles, battle)
-	
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(BattleResponse{
-		Id: battleID,
+		Id:        battleID,
 		DiceThrow: diceThrow,
-		Player: players[indexPlayer],
-		Enemy: enemies[indexEnemy],
+		Player:    players[indexPlayer],
+		Enemy:     enemies[indexEnemy],
 	})
 }
 
