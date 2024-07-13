@@ -375,17 +375,17 @@ func AddBattle(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(BattleResponse{
-		Id: "uuid",
+		Id: battleID,
 		DiceThrow: diceThrow,
 		Player: players[indexPlayer],
 		Enemy: enemies[indexEnemy],
 	})
+}
 
-
-	
-
+func LoadBattles(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(battle)
+	json.NewEncoder(w).Encode(battles)
 }
 
 func main() {
@@ -404,6 +404,7 @@ func main() {
 	mux.HandleFunc("PUT /enemy/{nickname}", SaveEnemy)
 
 	mux.HandleFunc("POST /battle", AddBattle)
+	mux.HandleFunc("GET /battle", LoadBattles)
 
 	fmt.Println("Server is running on port 8080")
 	err := http.ListenAndServe(":8080", mux)
