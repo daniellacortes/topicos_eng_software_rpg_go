@@ -1,5 +1,8 @@
-module github.com/Uemerson/go-simple-rpg-api
+module topicos_eng_software_rpg_go
 
-go 1.22.4
+go 1.22.2
 
-require github.com/google/uuid v1.6.0
+require (
+	github.com/google/uuid v1.6.0
+	github.com/lib/pq v1.10.9
+)

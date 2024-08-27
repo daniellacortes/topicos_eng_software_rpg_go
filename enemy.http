@@ -2,7 +2,7 @@ POST http://localhost:8080/enemy HTTP/1.1
 content-type: application/json
 
 {
-    "nickname": "Thanus"
+    "nickname": "Thanos"
 }
 
 ###
@@ -14,7 +14,7 @@ content-type: application/json
 
 ###
 
-DELETE http://localhost:8080/enemy/Voldemort HTTP/1.1
+DELETE http://localhost:8080/enemy/Thanos HTTP/1.1
 content-type: application/json
 
 {
@@ -22,7 +22,7 @@ content-type: application/json
 
 ###
 
-GET http://localhost:8080/player/Voldemort HTTP/1.1
+GET http://localhost:8080/player/Thanos HTTP/1.1
 content-type: application/json
 
 {
@@ -30,9 +30,9 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:8080/player/Voldemort HTTP/1.1
+PUT http://localhost:8080/player/Thanos HTTP/1.1
 content-type: application/json
 
 {
-    "nickname": "Lord Voldemort"
+    "nickname": "Thanos de Titã"
 }
